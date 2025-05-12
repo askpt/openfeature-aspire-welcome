@@ -23,7 +23,7 @@ This project is a demonstration of how to integrate OpenFeature with .NET Aspire
 ## Prerequisites
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) or later
-- [Docker](https://www.docker.com/products/docker-desktop/) for running flagd container
+- [Docker](https://www.docker.com/products/docker-desktop/) for running the services
 
 ## Setup
 
@@ -93,6 +93,6 @@ You can modify the feature flags by editing the `flagd/flagd.json` file. After m
 
 ## Additional Resources
 
-- [OpenFeature Documentation](https://openfeature.dev/docs/reference/concepts/evaluation-api)
+- [OpenFeature Documentation](https://openfeature.dev/)
 - [flagd Documentation](https://flagd.dev/)
 - [.NET Aspire Documentation](https://learn.microsoft.com/en-us/dotnet/aspire/)
