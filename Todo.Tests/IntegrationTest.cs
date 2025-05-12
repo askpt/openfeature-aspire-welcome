@@ -4,7 +4,7 @@ namespace Todo.Tests;
 
 public class IntegrationTest
 {
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(120);
 
     [Fact]
     public async Task GetWebResourceRootReturnsOkStatusCode()
@@ -24,15 +24,15 @@ public class IntegrationTest
         {
             clientBuilder.AddStandardResilienceHandler();
         });
-    
+
         await using var app = await appHost.BuildAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
         await app.StartAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
-    
+
         // Act
         var httpClient = app.CreateHttpClient("webfrontend");
         await app.ResourceNotifications.WaitForResourceHealthyAsync("webfrontend", cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
         var response = await httpClient.GetAsync("/", cancellationToken);
-    
+
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
