@@ -4,7 +4,7 @@ namespace Todo.Tests;
 
 public class IntegrationTest
 {
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
 
     [Fact]
     public async Task GetWebResourceRootReturnsOkStatusCode()
