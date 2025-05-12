@@ -17,20 +17,20 @@ This project is a demonstration of how to integrate OpenFeature with .NET Aspire
 - Integration of OpenFeature with .NET Aspire
 - Feature flag management using flagd
 - Sample feature flags demonstrating different use cases:
-  - `use-new-counter-version`: Controls the counter increment behavior in the web application
+  - `use-new-counter-version`: Controls the counter increment behaviour in the web application
   - `return-weather-forecast`: Controls the number of weather forecasts returned by the API
 
 ## Prerequisites
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) or later
-- [Docker](https://www.docker.com/products/docker-desktop/) for running flagd container
+- [Docker](https://www.docker.com/products/docker-desktop/) for running the services
 
 ## Setup
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/openfeature-aspire-welcome.git
+git clone https://github.com/askpt/openfeature-aspire-welcome.git
 cd openfeature-aspire-welcome
 ```
 
@@ -60,12 +60,12 @@ cd Todo.AppHost
 dotnet run
 ```
 
-The Aspire dashboard will open automatically, showing the status of all services. You can navigate to the web application from there.
+The Aspire dashboard will open automatically, showing the status of all services. From there, you can navigate to the web application.
 
 ## Project Structure
 
 - **Todo.Web**: Contains the frontend Blazor application
-  - Uses the counter feature flag to demonstrate different behaviors
+  - Uses the counter feature flag to demonstrate different behaviours
 - **Todo.ApiService**: Contains the backend API service
   - Uses a feature flag to control the number of weather forecasts returned
 - **Todo.AppHost**: The Aspire host application
@@ -93,6 +93,6 @@ You can modify the feature flags by editing the `flagd/flagd.json` file. After m
 
 ## Additional Resources
 
-- [OpenFeature Documentation](https://openfeature.dev/docs/reference/concepts/evaluation-api)
+- [OpenFeature Documentation](https://openfeature.dev/)
 - [flagd Documentation](https://flagd.dev/)
 - [.NET Aspire Documentation](https://learn.microsoft.com/en-us/dotnet/aspire/)
