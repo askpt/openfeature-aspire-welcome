@@ -1,0 +1,23 @@
+{
+    "$schema": "https://flagd.dev/schema/v0/flags.json",
+    "flags": {
+        "use-new-counter-version": {
+            "state": "ENABLED",
+            "defaultVariant": "ENABLED",
+            "variants": {
+                "ENABLED": true,
+                "DISABLED": false
+            },
+            "targeting": {}
+        },
+        "return-weather-forecast": {
+            "state": "ENABLED",
+            "defaultVariant": "five",
+            "variants": {
+                "five": 5,
+                "three": 3
+            },
+            "targeting": {}
+        }
+    }
+}

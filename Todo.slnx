@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Todo.ApiService/Todo.ApiService.csproj" />
+  <Project Path="Todo.AppHost/Todo.AppHost.csproj" />
+  <Project Path="Todo.ServiceDefaults/Todo.ServiceDefaults.csproj" />
+  <Project Path="Todo.Tests/Todo.Tests.csproj" />
+  <Project Path="Todo.Web/Todo.Web.csproj" />
+</Solution>

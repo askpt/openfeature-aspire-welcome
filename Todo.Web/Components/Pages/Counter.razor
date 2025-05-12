@@ -1,0 +1,41 @@
+﻿@page "/counter"
+@using OpenFeature
+@rendermode InteractiveServer
+@inject IFeatureClient FeatureClient
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private async Task IncrementCount()
+    {
+        var shouldUseNewVersion = await FeatureClient.GetBooleanValueAsync("use-new-counter-version", false);
+        if (shouldUseNewVersion)
+        {
+            IncrementCountBad();
+        }
+        else
+        {
+            IncrementCountGood();
+        }
+    }
+
+    private void IncrementCountGood()
+    {
+        currentCount++;
+    }
+
+    private void IncrementCountBad()
+    {
+        // Increment with some random values
+        currentCount += new Random().Next(-9999, 9999);
+    }
+
+}
