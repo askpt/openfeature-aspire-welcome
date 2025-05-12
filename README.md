@@ -44,7 +44,13 @@ dotnet user-secrets init
 dotnet user-secrets set "flagd:Source" "$(pwd)/../flagd"
 ```
 
-> **Note**: This sets the absolute path to your flagd folder in the user secrets. The AppHost will use this path to mount the flagd configuration file to the container.
+> **Note for Unix-like systems**: This sets the absolute path to your flagd folder in the user secrets. The AppHost will use this path to mount the flagd configuration file to the container.
+>
+> **Note for Windows users**: If you are using PowerShell, replace `$(pwd)` with `$(Get-Location)` in the command above. For example:
+>
+> ```powershell
+> dotnet user-secrets set "flagd:Source" "$(Get-Location)/../flagd"
+> ```
 
 ### 3. Build and run the application
 
