@@ -24,15 +24,15 @@ public class IntegrationTest
         {
             clientBuilder.AddStandardResilienceHandler();
         });
-    
+
         await using var app = await appHost.BuildAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
         await app.StartAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
-    
+
         // Act
         var httpClient = app.CreateHttpClient("webfrontend");
         await app.ResourceNotifications.WaitForResourceHealthyAsync("webfrontend", cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
         var response = await httpClient.GetAsync("/", cancellationToken);
-    
+
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
