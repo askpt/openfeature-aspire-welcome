@@ -6,19 +6,20 @@
 
 <PageTitle>Home</PageTitle>
 
-@if (_isEnglishLanguageEnabled == true)
+@if (_isPageV2Enabled == false)
 {
     <h1>Hello, world!</h1>
     <p>Welcome to your new app.</p>
 }
 else
 {
-    <h1>Olá, mundo!</h1>
-    <p>Bem-vindo à tua nova aplicação.</p>
+    <h1>Hello, world! 🌍</h1>
+    <p>Welcome to your new app.</p>
+    <p>This is the v2 of this page! Enjoy <b>OpenFeature</b>!</p>
 }
 
 @code {
-    private bool? _isEnglishLanguageEnabled;
+    private bool? _isPageV2Enabled;
 
     protected override async Task OnInitializedAsync()
     {
@@ -26,6 +27,6 @@ else
         builder.Set("speaker", "pt");
         var context = builder.Build();
 
-        _isEnglishLanguageEnabled = await FeatureClient.GetBooleanValueAsync("english-language", true, context);
+        _isPageV2Enabled = await FeatureClient.GetBooleanValueAsync("page-v2", false, context);
     }
 }
