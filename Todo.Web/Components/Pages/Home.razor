@@ -1,8 +1,32 @@
 ﻿@page "/"
 @attribute [OutputCache(Duration = 10)]
+@using OpenFeature
+@using OpenFeature.Model
+@inject IFeatureClient FeatureClient
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+@if (!_isPageV2Enabled)
+{
+    <h1>Hello, world!</h1>
+    <p>Welcome to your new app.</p>
+}
+else
+{
+    <h1>Hello, world! 🌍</h1>
+    <p>Welcome to your new app.</p>
+    <p>This is the v2 of this page! Enjoy <b>OpenFeature</b>!</p>
+}
 
-Welcome to your new app.
+@code {
+    private bool _isPageV2Enabled;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var builder = EvaluationContext.Builder();
+        builder.Set("country", "pt");
+        var context = builder.Build();
+
+        _isPageV2Enabled = await FeatureClient.GetBooleanValueAsync("page-v2", false, context);
+    }
+}

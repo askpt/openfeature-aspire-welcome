@@ -18,6 +18,27 @@
                 "three": 3
             },
             "targeting": {}
+        },
+        "page-v2": {
+            "state": "DISABLED",
+            "defaultVariant": "old-page",
+            "variants": {
+                "new-page": true,
+                "old-page": false
+            },
+            "targeting": {
+                "if": [
+                    {
+                        "==": [
+                            {
+                                "var": "country"
+                            },
+                            "pt"
+                        ]
+                    },
+                    "new-page"
+                ]
+            }
         }
     }
 }
