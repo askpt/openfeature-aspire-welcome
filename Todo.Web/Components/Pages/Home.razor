@@ -24,7 +24,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         var builder = EvaluationContext.Builder();
-        builder.Set("speaker", "pt");
+        builder.Set("country", "pt");
         var context = builder.Build();
 
         _isPageV2Enabled = await FeatureClient.GetBooleanValueAsync("page-v2", false, context);
