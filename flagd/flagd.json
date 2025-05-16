@@ -3,10 +3,10 @@
     "flags": {
         "use-new-counter-version": {
             "state": "ENABLED",
-            "defaultVariant": "ENABLED",
+            "defaultVariant": "false",
             "variants": {
-                "ENABLED": true,
-                "DISABLED": false
+                "true": true,
+                "false": false
             },
             "targeting": {}
         },
