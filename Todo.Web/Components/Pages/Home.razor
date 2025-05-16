@@ -6,7 +6,7 @@
 
 <PageTitle>Home</PageTitle>
 
-@if (_isPageV2Enabled == false)
+@if (!_isPageV2Enabled)
 {
     <h1>Hello, world!</h1>
     <p>Welcome to your new app.</p>
@@ -19,7 +19,7 @@ else
 }
 
 @code {
-    private bool? _isPageV2Enabled;
+    private bool _isPageV2Enabled;
 
     protected override async Task OnInitializedAsync()
     {
