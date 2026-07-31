@@ -1,0 +1,39 @@
+{
+  "mcpServers": {
+    "aspire": {
+      "type": "local",
+      "command": "aspire",
+      "args": [
+        "agent",
+        "mcp"
+      ],
+      "tools": [
+        "*"
+      ]
+    },
+    "github-agentic-workflows": {
+      "type": "local",
+      "command": "gh",
+      "args": [
+        "aw",
+        "mcp-server"
+      ],
+      "tools": [
+        "*"
+      ]
+    },
+    "azure": {
+      "type": "local",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@azure/mcp@latest",
+        "server",
+        "start"
+      ],
+      "tools": [
+        "*"
+      ]
+    }
+  }
+}
