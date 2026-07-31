@@ -26,7 +26,7 @@
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Flagd" Version="13.4.0" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector" Version="13.4.0" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.k6" Version="13.4.0" />
-    <PackageVersion Include="Scalar.Aspire" Version="0.11.11" />
+    <PackageVersion Include="Scalar.Aspire" Version="0.11.12" />
   </ItemGroup>
   <ItemGroup Label="Microsoft Packages">
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
