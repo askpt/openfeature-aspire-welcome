@@ -1,6 +1,6 @@
 name: Le Mans Quick Facts
 description: Provides brief, factual Le Mans answers
-model: openai/gpt-4o
+model: microsoft/phi-4-mini
 modelParameters:
   temperature: 0.3
 messages:

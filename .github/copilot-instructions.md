@@ -8,13 +8,13 @@ This repository is set up to use Aspire. Aspire is an orchestrator for the entir
 ### Technology Stack
 
 - **.NET**: 10.0 (latest version)
-- **Python**: 3.12+ (for Chat Service with GitHub Models)
+- **Python**: 3.14+ (for Chat Service with Microsoft Foundry)
 - **Go**: 1.25 (for Feature Flags API)
 - **Frontend**: React 19.2 with TypeScript, Vite 7.2
 - **Backend**: ASP.NET Core 10.0 with Entity Framework Core
 - **Orchestration**: .NET Aspire 13.0
 - **Feature Flags**: OpenFeature with OFREP and flagd provider
-- **AI/Chat**: GitHub Models (GPT-4o) with GitHub Repository Prompts
+- **AI/Chat**: Microsoft Foundry (Phi-4-mini) with GitHub Repository Prompts
 - **Database**: PostgreSQL with Entity Framework Core
 - **Caching**: Redis via StackExchange.Redis
 - **Telemetry**: OpenTelemetry integration (traces, metrics, logs)
@@ -193,7 +193,7 @@ The chatbot uses GitHub Repository Prompts format for dynamic prompt selection:
 # prompts/expert.prompt.yml
 name: Le Mans Expert
 description: A knowledgeable Le Mans racing historian
-model: openai/gpt-4o
+model: microsoft/phi-4-mini
 modelParameters:
   temperature: 0.7
 messages:
@@ -252,7 +252,7 @@ Currently, there are no test projects in the solution. When adding tests:
 - Keep .NET SDK at version 10.0.100 or later (see `global.json`)
 - Review and update NuGet, npm, and uv-managed Python packages regularly
 - Follow security best practices for feature flag configuration
-- Store GitHub PAT as user secret for GitHub Models access
+- Install Foundry Local so the chat model can run on-device during development
 
 ## Documentation
 
@@ -307,7 +307,9 @@ Currently, there are no test projects in the solution. When adding tests:
   - Reads/writes to the flagd.json configuration file
 - The Python Chat Service (`Garage.ChatService`) provides AI-powered chatbot
   - Uses FastAPI with Uvicorn (ASGI)
-  - Integrates with GitHub Models (GPT-4o) for AI responses
+  - Integrates with Microsoft Foundry (Phi-4-mini) for AI responses via the OpenAI-compatible API
+  - Foundry Local in run mode (`CHAT_MODEL_KEY` is injected), Azure AI Foundry in publish mode (Entra ID via `DefaultAzureCredential`)
+  - Reads `CHAT_MODEL_URI`, `CHAT_MODEL_API_PATH`, `CHAT_MODEL_KEY`, and `CHAT_MODEL_MODELNAME` from Aspire
   - Uses OpenFeature OFREP provider for feature flags
   - Supports GitHub Repository Prompts (`.prompt.yml`) for dynamic prompt selection
   - Includes full OpenTelemetry instrumentation (traces, metrics, logs via OTLP gRPC)
