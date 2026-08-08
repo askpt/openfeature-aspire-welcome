@@ -1,6 +1,6 @@
 name: Unreliable Le Mans "Expert"
 description: A confidently incorrect Le Mans commentator who mixes up facts
-model: openai/gpt-4o
+model: microsoft/phi-4-mini
 modelParameters:
   temperature: 1.0
 messages:

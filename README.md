@@ -19,7 +19,7 @@ This demo showcases how to implement feature flags using **OpenFeature** and the
 - **Dynamic Configuration**: Real-time feature flag updates without redeployment
 - **Full-Stack Implementation**: Feature flags working seamlessly across React UI, .NET API, and Python services
 - **Kill Switches**: Safely toggle features in production environments
-- **GitHub Models Integration**: AI-powered chatbot using GPT-4o via GitHub Models
+- **Microsoft Foundry Integration**: AI-powered chatbot using Phi-4-mini, served by Foundry Local during development and Azure AI Foundry when deployed
 - **GitHub Repository Prompts**: Dynamic prompt selection using `.prompt.yml` files
 
 ## Architecture
@@ -30,7 +30,7 @@ This demo showcases how to implement feature flags using **OpenFeature** and the
 - **Garage.ApiService**: REST API for car data with Entity Framework Core
 - **Garage.ApiModel**: Data model library containing the EF Core DbContext and entity definitions
 - **Garage.ApiDatabaseSeeder**: Database migration and seeding service
-- **Garage.ChatService**: Python FastAPI service for AI chatbot using GitHub Models
+- **Garage.ChatService**: Python FastAPI service for AI chatbot using Microsoft Foundry
 - **Garage.FeatureFlags**: Go API for managing feature flag targeting rules
 - **Garage.ServiceDefaults**: Shared services including OpenFeature, OpenTelemetry, and resilience configuration
 - **Garage.Shared**: Common models, DTOs, and seed data
@@ -41,7 +41,7 @@ This demo showcases how to implement feature flags using **OpenFeature** and the
 - **PostgreSQL**: Database for storing car collection data
 - **Redis**: Caching layer for improved performance
 - **flagd**: OpenFeature-compliant feature flag evaluation engine
-- **GitHub Models**: AI model provider for chatbot functionality
+- **Microsoft Foundry**: AI model provider for chatbot functionality (Foundry Local when running, Azure AI Foundry when published)
 - **Dev Tunnels**: Secure tunneling for external access to flagd during development
 
 ## Telemetry Support
@@ -90,7 +90,7 @@ The chatbot supports multiple prompt styles via GitHub Repository Prompts (`.pro
 - Git for version control
 - Docker Desktop (for containerized dependencies)
 - Azure account (for Dev Tunnels authentication during development)
-- GitHub PAT with access to GitHub Models (for chatbot functionality)
+- [Foundry Local](https://learn.microsoft.com/azure/ai-foundry/foundry-local/get-started) (for chatbot functionality)
 
 ## Quick Start
 
@@ -101,12 +101,21 @@ git clone https://github.com/open-feature/openfeature-aspire-sample.git
 cd openfeature-aspire-sample
 ```
 
-### 2. Configure GitHub Token (for Chatbot)
+### 2. Install Foundry Local (for Chatbot)
+
+The chatbot runs the Phi-4-mini model on your machine through [Foundry Local](https://learn.microsoft.com/azure/ai-foundry/foundry-local/get-started). Aspire starts the service and downloads the model for you, but the CLI has to be installed first:
 
 ```bash
-cd src/Garage.AppHost
-dotnet user-secrets set "Parameters:github-token" "<your-github-pat>"
+# macOS
+brew tap microsoft/foundrylocal
+brew trust microsoft/foundrylocal
+brew install foundrylocal
+
+# Windows
+winget install Microsoft.FoundryLocal
 ```
+
+> **Note:** The first run downloads the model weights, so it takes a few minutes. The dev container does not ship Foundry Local — run the app on the host if you need the chatbot. When the app is published, this resource becomes a provisioned Azure AI Foundry account instead, and the chat service authenticates with its managed identity.
 
 ### 3. Restore Dependencies
 
@@ -185,7 +194,7 @@ PUT  /flags/{name}    # Update targeting rules for a flag
 The Python chat service (`Garage.ChatService`) provides an AI-powered chatbot for Le Mans racing questions:
 
 - **Framework**: FastAPI with Uvicorn
-- **AI Provider**: GitHub Models (GPT-4o)
+- **AI Provider**: Microsoft Foundry (Phi-4-mini)
 - **Feature Flags**: OpenFeature with OFREP provider
 - **Telemetry**: Full OpenTelemetry integration (traces, metrics, logs)
 - **Prompts**: GitHub Repository Prompts format (`.prompt.yml`)
@@ -207,7 +216,8 @@ Response: { "status": "healthy" }
 - [OFREP Specification](https://openfeature.dev/specification/ofrep)
 - [flagd Documentation](https://flagd.dev/)
 - [.NET Aspire Documentation](https://learn.microsoft.com/en-us/dotnet/aspire/)
-- [GitHub Models Documentation](https://docs.github.com/en/github-models)
+- [Microsoft Foundry Documentation](https://learn.microsoft.com/azure/ai-foundry/)
+- [Foundry Local Documentation](https://learn.microsoft.com/azure/ai-foundry/foundry-local/)
 - [GitHub Repository Prompts](https://docs.github.com/en/github-models/use-github-models/storing-prompts-in-github-repositories)
 - [Feature Flag Best Practices](https://martinfowler.com/articles/feature-toggles.html)
 

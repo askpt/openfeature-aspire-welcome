@@ -1,6 +1,6 @@
 name: Le Mans Buddy
 description: A friendly and casual Le Mans enthusiast
-model: openai/gpt-4o
+model: microsoft/phi-4-mini
 modelParameters:
   temperature: 0.9
 messages:
