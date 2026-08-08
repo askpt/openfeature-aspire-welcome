@@ -201,6 +201,11 @@ jobs:
       contents: read
     steps:
       - name: Check that every gated job succeeded
+        # GitHub's default shell is `bash -e {0}` - `set -e` but *no* `pipefail`. Naming
+        # the shell explicitly upgrades it to `bash --noprofile --norc -eo pipefail {0}`,
+        # so a failure anywhere in `echo ... | jq ...` is observed rather than masked by
+        # jq's own exit status. A gate that fails open is worse than no gate at all.
+        shell: bash
         env:
           NEEDS_JSON: ${{ toJSON(needs) }}
           # Comma-separated jobs allowed to report `skipped`. The four language builds are
@@ -209,21 +214,36 @@ jobs:
           # its own result is left to fail the gate.
           ALLOWED_SKIPS: "build-dotnet,build-go,build-python,build-web"
         run: |
+          # Restated rather than relying on the shell keyword alone, so the script behaves
+          # the same when extracted and run outside Actions.
+          set -euo pipefail
+
+          # An empty `needs` would sail through every check below and report success
+          # without gating anything - e.g. if a future edit drops the `needs:` key.
+          # Assigned rather than inlined into the `if`, because `set -e` is suspended
+          # inside a condition: a jq parse failure there would fall through to the
+          # comparison instead of aborting.
+          job_count=$(jq -r 'length' <<<"$NEEDS_JSON")
+          if [ "$job_count" -eq 0 ]; then
+            echo "::error::CI Gate has no upstream jobs to check; its needs list is empty."
+            exit 1
+          fi
+
           {
             echo "### CI Gate"
             echo ""
             echo "| Job | Result |"
             echo "| --- | --- |"
-            echo "$NEEDS_JSON" | jq -r 'to_entries[] | "| \(.key) | \(.value.result) |"'
+            jq -r 'to_entries[] | "| \(.key) | \(.value.result) |"' <<<"$NEEDS_JSON"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          failing=$(echo "$NEEDS_JSON" | jq -r --arg allowed "$ALLOWED_SKIPS" '
+          failing=$(jq -r --arg allowed "$ALLOWED_SKIPS" '
             ($allowed | split(",") | map(select(length > 0))) as $ok
             | to_entries[]
             | select(.value.result != "success")
             | select(.value.result != "skipped" or ([.key] - $ok | length) > 0)
             | "\(.key): \(.value.result)"
-          ')
+          ' <<<"$NEEDS_JSON")
 
           if [ -n "$failing" ]; then
             echo "::error::One or more gated jobs did not succeed:"
