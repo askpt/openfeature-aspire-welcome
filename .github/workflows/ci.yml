@@ -1,10 +1,10 @@
 name: CI Build
 
-# Deliberately unfiltered by path. `ci-gate` is the single required status check, and a
-# workflow skipped by a `paths:` filter never creates its check runs - a required context
-# that never reports stays pending forever, which is why docs-only changes used to need a
-# ruleset bypass. Per-language filtering happens in the `changes` job instead, where a
-# skipped job still reports a conclusion.
+# Deliberately unfiltered by path. `ci-gate` is the job that gates merges, and a workflow
+# skipped by a `paths:` filter never creates its check runs - a required context that never
+# reports stays pending forever, which is why docs-only changes used to need a ruleset
+# bypass. Per-language filtering happens in the `changes` job instead, where a skipped job
+# still reports a conclusion.
 on:
   push:
     branches:
@@ -186,8 +186,9 @@ jobs:
       - name: Build
         run: npm run build
 
-  # The single required status check. Every other job hangs off this one, so gating a new
-  # job means adding it to `needs:` here - the ruleset never has to be edited again.
+  # The gating job. Every other job hangs off this one, so gating a new job means adding it
+  # to `needs:` here. It is intended to be the only status check the `main` ruleset
+  # requires, so the ruleset does not have to change when CI jobs do.
   ci-gate:
     name: CI Gate
     # `always()` is load-bearing. Without it the job inherits the implicit `success()`
