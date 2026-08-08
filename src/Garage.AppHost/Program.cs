@@ -1,5 +1,6 @@
-using Aspire.Hosting.GitHub;
+using Aspire.Hosting.Foundry;
 using Azure.Provisioning;
+using Azure.Provisioning.CognitiveServices;
 using Azure.Provisioning.Expressions;
 using Azure.Provisioning.Resources;
 using Azure.Provisioning.Roles;
@@ -12,11 +13,17 @@ var builder = DistributedApplication.CreateBuilder(args);
 var containerAppEnvironment = builder
     .AddAzureContainerAppEnvironment("cae");
 
-// Add GitHub Models (requires GitHub PAT)
-var githubToken = builder.AddParameter("github-token", secret: true);
-var chatModel = builder.AddGitHubModel("chat-model", GitHubModel.OpenAI.OpenAIGpt4o)
-    .WithApiKey(githubToken)
-    .WithHealthCheck();
+// Microsoft Foundry provides the chat model: Foundry Local on the developer machine,
+// a provisioned Azure AI Foundry account when published.
+var foundry = builder.AddFoundry("foundry")
+    .RunAsFoundryLocal();
+
+// Foundry Local only serves on-device models, so the Phi-4 descriptor differs per mode
+// even though both resolve to the same model family. Phi-4-mini keeps the chatbot responsive
+// on developer machines without a dedicated GPU.
+var chatModel = foundry.AddDeployment(
+    "chat-model",
+    builder.ExecutionContext.IsPublishMode ? FoundryModel.Microsoft.Phi4MiniInstruct : FoundryModel.Local.Phi4Mini);
 
 var cache = builder.AddAzureManagedRedis("cache").RunAsContainer();
 
@@ -42,6 +49,7 @@ var chatService = builder.AddUvicornApp("chatservice", "../Garage.ChatService/",
     .WithUv()
     .WithExternalHttpEndpoints()
     .WithReference(chatModel)
+    .WaitFor(chatModel)
     .WithEnvironment("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "true")
     .WithOtlpExporter()
     .WithHttpHealthCheck("/health")
@@ -49,8 +57,14 @@ var chatService = builder.AddUvicornApp("chatservice", "../Garage.ChatService/",
 
 if (builder.ExecutionContext.IsPublishMode)
 {
+    // Foundry Local publishes a ready-to-use OpenAI base URL, but Azure AI Foundry only exposes the
+    // account root, so the OpenAI-compatible route has to be appended there.
+    // Azure AI Foundry also has local auth disabled, so the chat service authenticates with its
+    // managed identity instead of an API key.
     chatService = chatService
-        .WithArgs("main:app", "--host", "0.0.0.0", "--port", "8000");
+        .WithArgs("main:app", "--host", "0.0.0.0", "--port", "8000")
+        .WithEnvironment("CHAT_MODEL_API_PATH", "openai/v1")
+        .WithRoleAssignments(foundry, CognitiveServicesBuiltInRole.CognitiveServicesUser);
 }
 
 // Feature flags infrastructure

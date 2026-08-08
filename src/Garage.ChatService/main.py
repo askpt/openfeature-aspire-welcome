@@ -1,4 +1,4 @@
-"""Le Mans Chatbot Service - FastAPI application using GitHub Models and OpenFeature."""
+"""Le Mans Chatbot Service - FastAPI application using Microsoft Foundry and OpenFeature."""
 
 import os
 import time
@@ -7,12 +7,14 @@ import json
 from typing import Any
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import grpc
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from openai import OpenAI
 from openfeature import api
 from openfeature.contrib.provider.ofrep import OFREPProvider
@@ -47,10 +49,19 @@ from prompt_loader import load_prompt, render_messages, get_model_parameters
 
 # Get configuration from environment
 OFREP_ENDPOINT = os.environ.get("OFREP_ENDPOINT", "http://localhost:8016")
-# GitHub Models connection from Aspire (uses format: {RESOURCE}_{PROPERTY})
-GITHUB_MODELS_ENDPOINT = os.environ.get("CHAT_MODEL_URI", "https://models.github.ai/inference")
-GITHUB_TOKEN = os.environ.get("CHAT_MODEL_KEY", "")
-GITHUB_MODEL_NAME = os.environ.get("CHAT_MODEL_MODELNAME", "openai/gpt-4o")
+# Microsoft Foundry connection from Aspire (uses format: {RESOURCE}_{PROPERTY}).
+# Foundry Local injects CHAT_MODEL_KEY; Azure AI Foundry does not and expects a
+# Microsoft Entra ID token from the service's managed identity instead.
+CHAT_MODEL_ENDPOINT = os.environ.get("CHAT_MODEL_URI", "http://localhost:5273/v1")
+# Foundry Local already exposes a complete OpenAI base URL, while Azure AI Foundry only exposes the
+# account root, so the AppHost supplies the extra "openai/v1" segment in publish mode.
+CHAT_MODEL_API_PATH = os.environ.get("CHAT_MODEL_API_PATH", "")
+CHAT_MODEL_KEY = os.environ.get("CHAT_MODEL_KEY", "")
+CHAT_MODEL_NAME = os.environ.get("CHAT_MODEL_MODELNAME", "phi-4-mini")
+CHAT_MODEL_SCOPE = os.environ.get("CHAT_MODEL_SCOPE", "https://cognitiveservices.azure.com/.default")
+CHAT_MODEL_BASE_URL = "/".join(
+    part for part in (CHAT_MODEL_ENDPOINT.rstrip("/"), CHAT_MODEL_API_PATH.strip("/")) if part
+)
 # OpenTelemetry configuration from Aspire
 OTLP_ENDPOINT = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT", "")
 SERVICE_NAME = os.environ.get("OTEL_SERVICE_NAME", "chatservice")
@@ -58,6 +69,13 @@ CAPTURE_MESSAGE_CONTENT = os.environ.get("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MES
 # CORS configuration - allow specific origins from environment, default to localhost dev servers
 CORS_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:5174").split(",")
 PROMPTS_DIR = Path(__file__).parent / "prompts"
+
+# Telemetry values derived from the resolved model endpoint.
+_CHAT_MODEL_URL = urlsplit(CHAT_MODEL_ENDPOINT)
+CHAT_MODEL_SERVER_ADDRESS = _CHAT_MODEL_URL.hostname or "localhost"
+CHAT_MODEL_SERVER_PORT = _CHAT_MODEL_URL.port or (443 if _CHAT_MODEL_URL.scheme == "https" else 80)
+# Foundry Local is a plain OpenAI-compatible server; Azure AI Foundry reports as azure.ai.openai.
+GENAI_PROVIDER_NAME = GENAI_PROVIDER_OPENAI if CHAT_MODEL_KEY else "azure.ai.openai"
 
 # Metrics - initialized after setup_telemetry
 chat_request_counter = None
@@ -274,10 +292,12 @@ app.add_middleware(
 # Instrument FastAPI with OpenTelemetry
 FastAPIInstrumentor.instrument_app(app)
 
-# Create OpenAI client for GitHub Models
+# Create the OpenAI-compatible client for the configured Microsoft Foundry endpoint.
+# Foundry Local injects a static API key; Azure AI Foundry authenticates with Microsoft Entra ID,
+# and the OpenAI SDK refreshes the bearer token on every request through the provider callable.
 openai_client = OpenAI(
-    base_url=GITHUB_MODELS_ENDPOINT,
-    api_key=GITHUB_TOKEN
+    base_url=CHAT_MODEL_BASE_URL,
+    api_key=CHAT_MODEL_KEY or get_bearer_token_provider(DefaultAzureCredential(), CHAT_MODEL_SCOPE)
 )
 
 
@@ -306,7 +326,7 @@ async def health_check():
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    """Chat endpoint that uses GitHub Models with dynamic prompt selection."""
+    """Chat endpoint that uses Microsoft Foundry with dynamic prompt selection."""
     start_time = time.time()
 
     tracer = trace.get_tracer(__name__)
@@ -359,19 +379,19 @@ async def chat(request: ChatRequest):
                 messages = render_messages(prompt, {"message": request.message})
                 model_params = get_model_parameters(prompt)
 
-            # Call GitHub Models
-            with tracer.start_as_current_span("github_models_call", kind=SpanKind.CLIENT) as model_span:
+            # Call the Microsoft Foundry chat model
+            with tracer.start_as_current_span("chat_model_call", kind=SpanKind.CLIENT) as model_span:
                 # Legacy attributes for backward compatibility
-                model_span.set_attribute("model", GITHUB_MODEL_NAME)
+                model_span.set_attribute("model", CHAT_MODEL_NAME)
                 model_span.set_attribute("temperature", model_params.get("temperature", 0.7))
 
                 # GenAI semantic conventions for Aspire dashboard visualization
                 model_span.set_attribute("gen_ai.operation.name", GENAI_OPERATION_CHAT)
-                model_span.set_attribute("gen_ai.provider.name", GENAI_PROVIDER_OPENAI)
-                model_span.set_attribute("gen_ai.request.model", GITHUB_MODEL_NAME)
+                model_span.set_attribute("gen_ai.provider.name", GENAI_PROVIDER_NAME)
+                model_span.set_attribute("gen_ai.request.model", CHAT_MODEL_NAME)
                 model_span.set_attribute("gen_ai.request.temperature", model_params.get("temperature", 0.7))
-                model_span.set_attribute("server.address", "models.github.ai")
-                model_span.set_attribute("server.port", 443)
+                model_span.set_attribute("server.address", CHAT_MODEL_SERVER_ADDRESS)
+                model_span.set_attribute("server.port", CHAT_MODEL_SERVER_PORT)
 
                 # Optional sensitive-content capture for GenAI visualizer.
                 if CAPTURE_MESSAGE_CONTENT:
@@ -382,7 +402,7 @@ async def chat(request: ChatRequest):
                         model_span.set_attribute("gen_ai.input.messages", json.dumps(input_messages))
 
                 response = openai_client.chat.completions.create(
-                    model=GITHUB_MODEL_NAME,
+                    model=CHAT_MODEL_NAME,
                     messages=messages,
                     temperature=model_params.get("temperature", 0.7)
                 )
@@ -445,7 +465,7 @@ async def chat(request: ChatRequest):
                 detail="Chat service is temporarily unavailable: prompt configuration is missing"
             )
         except Exception as e:
-            logger.error(f"Error calling GitHub Models: {e}")
+            logger.error(f"Error calling the chat model: {e}")
             if chat_request_counter:
                 chat_request_counter.add(1, {"status": "error", "prompt_style": prompt_file})
             raise HTTPException(

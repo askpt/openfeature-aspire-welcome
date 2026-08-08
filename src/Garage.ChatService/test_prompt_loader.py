@@ -154,7 +154,7 @@ class TestLoadPrompt:
         prompt_dir.mkdir()
         (prompt_dir / "full.prompt.yml").write_text(
             "name: Full Prompt\n"
-            "model: openai/gpt-4o\n"
+            "model: microsoft/phi-4-mini\n"
             "messages:\n"
             "  - role: system\n"
             "    content: You are helpful.\n"
@@ -163,7 +163,7 @@ class TestLoadPrompt:
             encoding="utf-8",
         )
         result = load_prompt("full", str(prompt_dir))
-        assert result["model"] == "openai/gpt-4o"
+        assert result["model"] == "microsoft/phi-4-mini"
         assert result["name"] == "Full Prompt"
         assert len(result["messages"]) == 1
         assert get_model_parameters(result) == {"temperature": 0.3}

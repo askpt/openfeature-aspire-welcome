@@ -1,6 +1,6 @@
 name: Le Mans Expert
 description: A knowledgeable Le Mans racing historian and expert
-model: openai/gpt-4o
+model: microsoft/phi-4-mini
 modelParameters:
   temperature: 0.7
 messages:
