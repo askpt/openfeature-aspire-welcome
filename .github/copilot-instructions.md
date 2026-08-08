@@ -246,16 +246,24 @@ Currently, there are no test projects in the solution. When adding tests:
    - Jobs: `changes` → `build-dotnet` (restore, `dotnet format --verify-no-changes`, Release
      build), `build-go` (`gofmt` check, `go test ./...`), `build-python` (`uv sync`, `pytest`),
      `build-web` (`npm ci`, lint, build) → `ci-gate`.
-   - `ci-gate` (`CI Gate`) is the **single required status check** on `main`. It runs on
-     `ubuntu-slim` with `if: always()`, and fails if any job it needs did not succeed. The four
+   - `ci-gate` (`CI Gate`) is the **gating job**. It runs on `ubuntu-slim` with
+     `if: always()`, and fails if any job it needs did not succeed. The four
      language builds are listed in its `ALLOWED_SKIPS`, so a skip-by-design passes; `changes`
      is not, and `cancelled` is never tolerated.
+   - By design `CI Gate` is meant to be the **only** status check the `main` ruleset requires,
+     so the ruleset does not have to change when CI jobs do. Check what is actually required
+     with:
+
+     ```bash
+     gh api repos/askpt/openfeature-aspire-sample/rulesets/5427048 \
+       --jq '.rules[] | select(.type=="required_status_checks") | .parameters.required_status_checks'
+     ```
 
 > [!IMPORTANT]
 > When adding a new CI job, add it to the `ci-gate` job's `needs:` list, otherwise it is
 > advisory and a pull request can merge while it is failing. Only add it to `ALLOWED_SKIPS` if
-> it is genuinely skipped by design. The repository ruleset requires `CI Gate` only, so it
-> never needs editing when jobs are added or removed.
+> it is genuinely skipped by design. As long as the ruleset requires `CI Gate` and nothing
+> else, it never needs editing when jobs are added or removed.
 
 2. **Copilot Setup Steps** (`.github/workflows/copilot-setup-steps.yml`)
    - Provisions the .NET, Go, Node.js and Python toolchains for the Copilot coding agent.
