@@ -1,26 +1,28 @@
 name: CI Build
 
+# Deliberately unfiltered by path. `ci-gate` is the job that gates merges, and a workflow
+# skipped by a `paths:` filter never creates its check runs - a required context that never
+# reports stays pending forever, which is why docs-only changes used to need a ruleset
+# bypass. Per-language filtering happens in the `changes` job instead, where a skipped job
+# still reports a conclusion.
 on:
   push:
     branches:
       - "main"
-    paths:
-      - "src/**"
-      - "**/*.props"
-      - "*.slnx"
-      - "global.json"
-      - ".github/workflows/ci.yml"
   pull_request:
-    paths:
-      - "src/**"
-      - "**/*.props"
-      - "*.slnx"
-      - "global.json"
-      - ".github/workflows/ci.yml"
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  # Supersede in-flight runs for the same pull request only. Runs on `main` are never
+  # cancelled, so the commit that lands always keeps a complete set of results.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
   changes:
@@ -36,6 +38,8 @@ jobs:
       web: ${{ steps.filter.outputs.web }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
         id: filter
         with:
@@ -70,6 +74,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Cache NuGet packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -102,6 +108,8 @@ jobs:
         working-directory: src/Garage.FeatureFlags
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Setup Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
@@ -132,6 +140,8 @@ jobs:
         working-directory: src/Garage.ChatService
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -161,6 +171,8 @@ jobs:
         working-directory: src/Garage.Web
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -173,3 +185,71 @@ jobs:
         run: npm run lint
       - name: Build
         run: npm run build
+
+  # The gating job. Every other job hangs off this one, so gating a new job means adding it
+  # to `needs:` here. It is intended to be the only status check the `main` ruleset
+  # requires, so the ruleset does not have to change when CI jobs do.
+  ci-gate:
+    name: CI Gate
+    # `always()` is load-bearing. Without it the job inherits the implicit `success()`
+    # condition and reports as *skipped* when a dependency fails - and a skipped check
+    # satisfies a ruleset, letting through exactly the pull requests this is meant to stop.
+    if: always()
+    needs: [changes, build-dotnet, build-go, build-python, build-web]
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Check that every gated job succeeded
+        # GitHub's default shell is `bash -e {0}` - `set -e` but *no* `pipefail`. Naming
+        # the shell explicitly upgrades it to `bash --noprofile --norc -eo pipefail {0}`,
+        # so a failure anywhere in `echo ... | jq ...` is observed rather than masked by
+        # jq's own exit status. A gate that fails open is worse than no gate at all.
+        shell: bash
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          # Comma-separated jobs allowed to report `skipped`. The four language builds are
+          # skipped by design when `changes` reports their paths were untouched. `changes`
+          # is deliberately absent: if it fails, the builds cascade to `skipped` and only
+          # its own result is left to fail the gate.
+          ALLOWED_SKIPS: "build-dotnet,build-go,build-python,build-web"
+        run: |
+          # Restated rather than relying on the shell keyword alone, so the script behaves
+          # the same when extracted and run outside Actions.
+          set -euo pipefail
+
+          # An empty `needs` would sail through every check below and report success
+          # without gating anything - e.g. if a future edit drops the `needs:` key.
+          # Assigned rather than inlined into the `if`, because `set -e` is suspended
+          # inside a condition: a jq parse failure there would fall through to the
+          # comparison instead of aborting.
+          job_count=$(jq -r 'length' <<<"$NEEDS_JSON")
+          if [ "$job_count" -eq 0 ]; then
+            echo "::error::CI Gate has no upstream jobs to check; its needs list is empty."
+            exit 1
+          fi
+
+          {
+            echo "### CI Gate"
+            echo ""
+            echo "| Job | Result |"
+            echo "| --- | --- |"
+            jq -r 'to_entries[] | "| \(.key) | \(.value.result) |"' <<<"$NEEDS_JSON"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          failing=$(jq -r --arg allowed "$ALLOWED_SKIPS" '
+            ($allowed | split(",") | map(select(length > 0))) as $ok
+            | to_entries[]
+            | select(.value.result != "success")
+            | select(.value.result != "skipped" or ([.key] - $ok | length) > 0)
+            | "\(.key): \(.value.result)"
+          ' <<<"$NEEDS_JSON")
+
+          if [ -n "$failing" ]; then
+            echo "::error::One or more gated jobs did not succeed:"
+            echo "$failing"
+            exit 1
+          fi
+
+          echo "All gated jobs succeeded or were intentionally skipped."

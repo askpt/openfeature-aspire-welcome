@@ -237,13 +237,37 @@ Currently, there are no test projects in the solution. When adding tests:
 ### GitHub Actions Workflows
 
 1. **CI Build** (`.github/workflows/ci.yml`)
-   - Runs on push to main and all PRs
-   - Builds with `dotnet build --configuration Release`
-   - Tests are commented out (add when test projects exist)
+   - Runs on every pull request and on every push to `main`. Deliberately has **no
+     workflow-level `paths:` filter** — a workflow skipped by a path filter never creates its
+     check runs, which leaves a required status check pending forever.
+   - `changes` uses `dorny/paths-filter` to decide which language builds are needed. Each
+     build job is skipped via `if:` when its paths are untouched, and a skipped job still
+     reports a conclusion, so nothing hangs.
+   - Jobs: `changes` → `build-dotnet` (restore, `dotnet format --verify-no-changes`, Release
+     build), `build-go` (`gofmt` check, `go test ./...`), `build-python` (`uv sync`, `pytest`),
+     `build-web` (`npm ci`, lint, build) → `ci-gate`.
+   - `ci-gate` (`CI Gate`) is the **gating job**. It runs on `ubuntu-slim` with
+     `if: always()`, and fails if any job it needs did not succeed. The four
+     language builds are listed in its `ALLOWED_SKIPS`, so a skip-by-design passes; `changes`
+     is not, and `cancelled` is never tolerated.
+   - By design `CI Gate` is meant to be the **only** status check the `main` ruleset requires,
+     so the ruleset does not have to change when CI jobs do. Check what is actually required
+     with:
 
-2. **Format Check** (`.github/workflows/format.yml`)
-   - Runs on push to main and PRs to main
-   - Verifies code formatting with `dotnet format --verify-no-changes`
+     ```bash
+     gh api repos/askpt/openfeature-aspire-sample/rulesets/5427048 \
+       --jq '.rules[] | select(.type=="required_status_checks") | .parameters.required_status_checks'
+     ```
+
+> [!IMPORTANT]
+> When adding a new CI job, add it to the `ci-gate` job's `needs:` list, otherwise it is
+> advisory and a pull request can merge while it is failing. Only add it to `ALLOWED_SKIPS` if
+> it is genuinely skipped by design. As long as the ruleset requires `CI Gate` and nothing
+> else, it never needs editing when jobs are added or removed.
+
+2. **Copilot Setup Steps** (`.github/workflows/copilot-setup-steps.yml`)
+   - Provisions the .NET, Go, Node.js and Python toolchains for the Copilot coding agent.
+   - Environment setup rather than a CI check, so it is intentionally outside the gate.
 
 ## Dependencies and Security
 
