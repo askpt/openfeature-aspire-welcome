@@ -2,7 +2,7 @@
 
 [![.NET 10.0](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Python 3.14](https://img.shields.io/badge/Python-3.14-3776AB?logo=python)](https://python.org/)
-[![Go 1.25](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go)](https://go.dev/)
+[![Go 1.26](https://img.shields.io/badge/Go-1.26-00ADD8?logo=go)](https://go.dev/)
 [![Aspire 13.2](https://img.shields.io/badge/Aspire-13.2-purple)](https://learn.microsoft.com/en-us/dotnet/aspire/)
 [![OpenFeature](https://img.shields.io/badge/OpenFeature-Ready-green)](https://openfeature.dev/)
 [![OFREP](https://img.shields.io/badge/OFREP-Enabled-blue)](https://openfeature.dev/specification/ofrep)
@@ -84,13 +84,24 @@ The chatbot supports multiple prompt styles via GitHub Repository Prompts (`.pro
 
 - .NET 10.0 SDK or later
 - Python 3.14 or later
-- Go 1.25 or later (for Feature Flags API)
+- Go 1.26 or later (for Feature Flags API)
 - Node.js 22 or later (for React frontend)
 - Visual Studio, Visual Studio Code with C# extension or JetBrains Rider
 - Git for version control
 - Docker Desktop (for containerized dependencies)
 - Azure account (for Dev Tunnels authentication during development)
 - [Foundry Local](https://learn.microsoft.com/azure/ai-foundry/foundry-local/get-started) (for chatbot functionality)
+
+### Develop in a Dev Container or GitHub Codespaces
+
+Instead of installing the prerequisites yourself, you can open the repository in a container. The `.devcontainer/devcontainer.json` follows the [recommended Aspire dev container configuration](https://aspire.dev/get-started/github-codespaces/#manually-configuring-devcontainerjson) and preinstalls the whole toolchain — the .NET 10 SDK, the Aspire CLI, Node.js 22, Python 3.14 with `uv`, Go 1.26, PowerShell, the GitHub CLI and Docker-in-Docker — plus a trusted local HTTPS development certificate.
+
+- **GitHub Codespaces**: select **Code** → **Codespaces** → **Create codespace on main**. The container requests a 4-core / 16 GB machine.
+- **VS Code locally**: install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) and run **Dev Containers: Reopen in Container**.
+
+Once the container is ready, skip ahead to [Restore Dependencies](#3-restore-dependencies) — `aspire run` is available immediately.
+
+> **Note:** The container does not ship Foundry Local, so the chatbot resource only works when you run the app on your host machine.
 
 ## Quick Start
 

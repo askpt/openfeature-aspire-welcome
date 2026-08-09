@@ -1,23 +1,29 @@
 {
   "name": "OpenFeature Aspire Sample",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
+  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0-noble",
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:latest": {},
-    "ghcr.io/devcontainers/features/dotnet:2": {
-      "version": "10.0"
-    },
-    "ghcr.io/devcontainers/features/node": {
+    "ghcr.io/microsoft/aspire-devcontainer-feature/aspire:2": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/powershell:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22",
       "installYarnUsingApt": false
     },
-    "ghcr.io/devcontainers/features/python": {
-      "version": "3.12"
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.14"
     },
-    "ghcr.io/devcontainers/features/go": {},
-    "ghcr.io/dotnet/aspire-devcontainer-feature/dotnetaspire:latest": {},
-    "ghcr.io/devcontainers/features/docker-in-docker": {}
+    "ghcr.io/devcontainers-extra/features/uv:1": {},
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.26.3"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+  "postStartCommand": "dotnet dev-certs https --trust",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -40,9 +46,5 @@
       ]
     }
   },
-  "remoteUser": "vscode",
-  "hostRequirements": {
-    "memory": "8gb"
-  },
-  "postStartCommand": "dotnet dev-certs https --trust"
+  "remoteUser": "vscode"
 }
