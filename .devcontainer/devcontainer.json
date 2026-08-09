@@ -3,9 +3,9 @@
   "image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0-noble",
   "features": {
     "ghcr.io/microsoft/aspire-devcontainer-feature/aspire:2": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/powershell:1": {},
-    "ghcr.io/devcontainers/features/node:1": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {},
+    "ghcr.io/devcontainers/features/powershell:2": {},
+    "ghcr.io/devcontainers/features/node:2": {
       "version": "22",
       "installYarnUsingApt": false
     },
