@@ -139,12 +139,12 @@ updates:
           - "golang"
           - "alpine"
 
-  - package-ecosystem: "docker"
-    directory: ".devcontainer/"
+  - package-ecosystem: "devcontainers"
+    directory: "/"
     schedule:
       interval: daily
     open-pull-requests-limit: 5
     groups:
-      devcontainer-base:
+      devcontainer:
         patterns:
-          - "mcr.microsoft.com/devcontainers/*"
+          - "*"
