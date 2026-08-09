@@ -9,7 +9,7 @@ This repository is set up to use Aspire. Aspire is an orchestrator for the entir
 
 - **.NET**: 10.0 (latest version)
 - **Python**: 3.14+ (for Chat Service with Microsoft Foundry)
-- **Go**: 1.25 (for Feature Flags API)
+- **Go**: 1.26 (for Feature Flags API)
 - **Frontend**: React 19.2 with TypeScript, Vite 7.2
 - **Backend**: ASP.NET Core 10.0 with Entity Framework Core
 - **Orchestration**: .NET Aspire 13.0
@@ -147,7 +147,7 @@ uvx mypy .
 
 ### Go Code
 
-- **Go Version**: 1.25 or later
+- **Go Version**: 1.26 or later
 - **Formatting**: Use `go fmt` for code formatting
 - **Error Handling**: Follow Go idioms for error handling
 - **Telemetry**: OpenTelemetry integration for tracing, metrics, and logging
