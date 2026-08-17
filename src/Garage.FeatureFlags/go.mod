@@ -3,7 +3,7 @@ module garageflags
 go 1.26.3
 
 require (
-	github.com/open-feature/go-sdk v1.17.2
+	github.com/open-feature/go-sdk v1.18.0
 	github.com/open-feature/go-sdk-contrib/providers/ofrep v0.1.7
 	go.opentelemetry.io/contrib/bridges/otelslog v0.20.0
 	go.opentelemetry.io/contrib/exporters/autoexport v0.70.0

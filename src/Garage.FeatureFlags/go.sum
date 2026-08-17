@@ -130,8 +130,8 @@ github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
-github.com/open-feature/go-sdk v1.17.2 h1:pTdeNks/hgnPrlqdgtFwltnIron1oOxqg4FmLlirJlY=
-github.com/open-feature/go-sdk v1.17.2/go.mod h1:kTMCquVtck18XdSCI6rBoNFEBLvkOy4Tphu2pV8bq34=
+github.com/open-feature/go-sdk v1.18.0 h1:+Ge8LAJjqDwQBqAWaWiTbnsiJ22d5SPQq7/hOiBwpqM=
+github.com/open-feature/go-sdk v1.18.0/go.mod h1:LOlB7jvyi3hz9mp7R2uIwCv+wcabCB4ir76AZJ1z2IQ=
 github.com/open-feature/go-sdk-contrib/providers/ofrep v0.1.7 h1:+w02ezTV6VpTkeUFD+w2j8T1sy4lNE0ogugTFkb4iGY=
 github.com/open-feature/go-sdk-contrib/providers/ofrep v0.1.7/go.mod h1:9zHXbH1Y/dghye4s/PTqJbjMuM6ucHBpJ5zjjUvRuY0=
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c h1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=
