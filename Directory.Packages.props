@@ -8,7 +8,7 @@
     <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
   </PropertyGroup>
   <ItemGroup Label="Aspire Packages">
-    <PackageVersion Include="Aspire.Azure.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.5.0" />
+    <PackageVersion Include="Aspire.Azure.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.5.1" />
     <PackageVersion Include="Aspire.Hosting.Azure.AppContainers" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.Azure.PostgreSQL" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.Azure.Redis" Version="13.4.6" />
@@ -20,13 +20,13 @@
     <PackageVersion Include="Aspire.Hosting.Go" Version="13.4.6-preview.1.26319.6" />
     <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.Python" Version="13.4.6" />
-    <PackageVersion Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.5.0" />
+    <PackageVersion Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.5.1" />
   </ItemGroup>
   <ItemGroup Label="Community Packages">
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Flagd" Version="13.4.0" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector" Version="13.4.0" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.k6" Version="13.4.0" />
-    <PackageVersion Include="Scalar.Aspire" Version="0.11.15" />
+    <PackageVersion Include="Scalar.Aspire" Version="0.11.17" />
   </ItemGroup>
   <ItemGroup Label="Microsoft Packages">
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
